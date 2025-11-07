@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { IoMdAdd } from "react-icons/io";
 import { IoSend } from "react-icons/io5"
+import axios from "axios"
 
 const App = () => {
     const [messages, setMessages] = useState([]);
@@ -9,16 +10,33 @@ const App = () => {
 
 
  
-  const handlesendmessage = ()=>{
-    if(!input.trim()) return 
+  const handlesendmessage = async () => {
+  if (!input.trim()) return;
 
-    const userMsg = input;
-    setInput("")
-    setMessages((prev) => [...prev, { sender: "user", text: userMsg }]);
-    setIsThinking(true);
+  const userMsg = input;
+  setInput("");
+  setMessages((prev) => [...prev, { sender: "user", text: userMsg }]);
+  setIsThinking(true);
 
-    
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/chat",
+      { Question: input },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    setMessages((prev) => [...prev, { sender: "ai", text: res.data.data }]);
+  } catch (error) {
+    console.error("Error:", error);
+    setMessages((prev) => [
+      ...prev,
+      { sender: "ai", text: "⚠️ Could not connect to AI server." },
+    ]);
+  } finally {
+    setIsThinking(false);
   }
+};
+
   const handleKeyPress = (e)=>{
     if(e.key === "Enter") handlesendmessage()
     
@@ -32,7 +50,7 @@ const App = () => {
        {/* AI chat board container */}
       <div className='bg-neutral-900 sm:w-[90%] w-[85%] h-[100%] flex flex-col items-center sm:p-3 '>
         <h1 className='text-white font-[700] sm:text-2xl text-lg mt-5 sm:mt-0'>AI message chatboard </h1>
-        <div className='sm:w-[55%] redw-full h-full p-1 '>
+        <div className='sm:w-[70%] w-full h-full p-1 '>
         <div className='overflow-y-auto h-[calc(100%-100px)] mb-4 scrollbar-hide'>
                   {messages.map((msg, index) => (
                     <div
@@ -42,10 +60,8 @@ const App = () => {
                       }`}
                     >{msg.sender === "ai" ? (
                         <div className="prose prose-invert max-w-fit">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}
-                          >
                             {msg.text}
-                          </ReactMarkdown>
+                          
                         </div>
                       ) : (
                         <h1>{msg.text}</h1>
@@ -55,7 +71,7 @@ const App = () => {
         
                   {isThinking && (
                     <div className='text-sm  mr-auto p-3 rounded-xl max-w-fit'>
-                      <h1 className='animate-pulse'>Thinking...</h1>
+                      <h1 className='animate-pulse text-white '>Thinking...</h1>
                     </div>
                   )}
                 </div>
