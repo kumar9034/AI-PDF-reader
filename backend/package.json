@@ -10,15 +10,19 @@
     "test": "npm run dev && exit 1"
   },
   "dependencies": {
+    "@langchain/classic": "^1.0.1",
     "@langchain/community": "^1.0.0",
-    "@langchain/core": "^1.0.2",
+    "@langchain/core": "^1.0.3",
     "@langchain/google-genai": "^1.0.0",
     "@langchain/pinecone": "^1.0.0",
     "@langchain/textsplitters": "^1.0.0",
     "@pinecone-database/pinecone": "^5.1.2",
+    "axios": "^1.13.2",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "langchain": "^1.0.2",
+    "multer": "^2.0.2",
     "pdf-parse": "^1.1.1"
   }
 }

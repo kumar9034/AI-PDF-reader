@@ -16,13 +16,15 @@ import { chat } from "./chat.js"
 import { TextLoader } from "./perpare.js"
 import express, { json } from "express"
 import cors from "cors"
+import { upload } from "./Uploader.js/multer.js"
+import cloudinary from "./Uploader.js/cloudinary.js"
 
 const app = express()
-const PORT = 5000
+const PORT = process.env.PORT
 
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:5173", // ✅ no trailing slash
+  origin: process.env.FRONTEND_URL ,  // ✅ no trailing slash
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -37,11 +39,50 @@ app.post("/chat",async (req, res)=>{
     res.status(200).json({data: Answer })
 })
  
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "chat_uploads",
+        resource_type: "raw", // ✅ for PDFs and non-image files
+        access_mode: "public",
+      },
+      async (error, result) => {
+        if (error) {
+          console.error("Cloudinary Error:", error);
+          return res.status(500).json({ error: "Upload failed" });
+        }
+
+        // 🟩 FIX: Rename variable to avoid shadowing Express res
+        const loaderResponse = await TextLoader(result.secure_url);
+
+        return res.json({
+          success: true,
+          message: loaderResponse.message,
+          url: result.secure_url,
+          public_id: result.public_id,
+        });
+      }
+    );
+
+    // ✅ Important: send the file buffer to Cloudinary
+    uploadStream.end(req.file.buffer);
+  } catch (err) {
+    console.error("Server Error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
 });
-const pathfile = "AI Question paper.pdf"  // Note the space before (1)
-// TextLoader(pathfile)
+
 
 
 
