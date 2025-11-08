@@ -20,7 +20,7 @@ const App = () => {
 
     try {
       const res = await axios.post(
-          `${import.meta.env.BACKEND_URL}/chat`,
+          `${import.meta.env.VITE_BACKEND_URL}/chat`,
         { Question: input },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -71,7 +71,7 @@ const App = () => {
   };
   
      const uploader = async ()=> {
-      const res = await axios.post(`${import.meta.env.BACKEND_URL}/upload`, formData , {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/upload`, formData , {
         headers: {
           "Content-Type": "multipart/form-data"
         }
