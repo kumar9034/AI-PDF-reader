@@ -12,77 +12,75 @@ stage 2 using the chatbot
 4. congratulations
 
 */
-import { chat } from "./chat.js"
-import { TextLoader } from "./perpare.js"
-import express, { json } from "express"
-import cors from "cors"
-import { upload } from "./Uploader.js/multer.js"
-import cloudinary from "./Uploader.js/cloudinary.js"
+import { chat } from "./chat.js";
+import { TextLoader } from "./perpare.js";
+import express from "express";
+import cors from "cors";
+import { upload } from "./Uploader.js/multer.js";
+import { put } from '@vercel/blob';
+import fs from 'fs';
+import "dotenv/config";
 
-const app = express()
-const PORT = process.env.PORT
+const app = express();
+const PORT = process.env.PORT || 3000;
+
 
 app.use(express.json());
-app.use(cors({
-  origin: process.env.FRONTEND_URL ,  // ✅ no trailing slash
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
-app.post("/chat",async (req, res)=>{
-    const { Question } =req.body
-    if(!Question){
-        return res.status(400).json({message : "Question not able"})
-    }
 
-   const Answer = await chat(Question)
-    res.status(200).json({data: Answer })
-})
- 
-app.post("/upload", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "chat_uploads",
-        resource_type: "raw", // ✅ for PDFs and non-image files
-        access_mode: "public",
-      },
-      async (error, result) => {
-        if (error) {
-          console.error("Cloudinary Error:", error);
-          return res.status(500).json({ error: "Upload failed" });
-        }
-
-        // 🟩 FIX: Rename variable to avoid shadowing Express res
-        const loaderResponse = await TextLoader(result.secure_url);
-
-        return res.json({
-          success: true,
-          message: loaderResponse.message,
-          url: result.secure_url,
-          public_id: result.public_id,
-        });
-      }
-    );
-
-    // ✅ Important: send the file buffer to Cloudinary
-    uploadStream.end(req.file.buffer);
-  } catch (err) {
-    console.error("Server Error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+app.post("/chat", async (req, res) => {
+  const { Question } = req.body;
+  if (!Question) {
+    return res.status(400).json({ message: "Question not able" });
   }
+
+  const Answer = await chat(Question);
+  res.status(200).json({ data: Answer });
 });
 
+app.post("/upload", upload.single("file"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+        
+        const filePath = req.file.path;
+        // Read file data into memory (Multer already saved it to disk)
+        const fileData = fs.readFileSync(filePath); 
 
+        // 1. Upload the file data to Vercel Blob
+        // The file name will be used as the blob key
+        const blob = await put(req.file.originalname, fileData, {
+            access: 'public', // Makes the file URL publicly accessible
+            contentType: req.file.mimetype,
+            // The put function automatically uses the BLOB_READ_WRITE_TOKEN 
+            // from the environment variables.
+        });
+        // 2. Delete the temp file
+        fs.unlinkSync(filePath);
+        
+        // 3. The blob object contains the final URL
+        const fileUrl = blob.url; 
+        
+        const message = TextLoader(fileUrl)
+        // 4. Return success (and proceed to RAG indexing with fileUrl)
+        res.json({ success: true, fileUrl, message : message });
 
+    } catch (err) {
+        console.error("Vercel Blob Upload Error:", err.message);
+        res.status(500).json({ message: "Vercel Blob upload failed", error: err.message });
+    }
+});
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
 });
-
 
 
 

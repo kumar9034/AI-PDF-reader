@@ -9,7 +9,6 @@
   "scripts": {
     "test": "npm run dev && exit 1",
     "start": "node index.js"
-
   },
   "dependencies": {
     "@langchain/classic": "^1.0.1",
@@ -19,12 +18,15 @@
     "@langchain/pinecone": "^1.0.0",
     "@langchain/textsplitters": "^1.0.0",
     "@pinecone-database/pinecone": "^5.1.2",
+    "@uploadthing/react": "^7.3.3",
+    "@vercel/blob": "^2.0.0",
     "axios": "^1.13.2",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "langchain": "^1.0.2",
     "multer": "^2.0.2",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "uploadthing": "^7.7.4"
   }
 }

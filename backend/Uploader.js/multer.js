@@ -1,13 +1,22 @@
 import multer from "multer";
-import dotenv from "dotenv"
-import express from "express"
+import fs from "fs";
+import path from "path";
 
 
+const uploadDir = path.join(process.cwd(), "uploads");
 
-dotenv.config();
-const app = express();
-app.use(express.json());
+// 🟢 Create uploads folder automatically if it doesn’t exist
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-// configure multer
-const storage = multer.memoryStorage(); // store in memory buffer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
 export const upload = multer({ storage });

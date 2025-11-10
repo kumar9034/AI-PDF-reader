@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoMdAdd } from "react-icons/io";
 import { IoSend } from "react-icons/io5";
 import axios from "axios";
@@ -9,7 +9,13 @@ const App = () => {
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const [input, setInput] = useState("");
-  
+  const chatEndRef = useRef(null);
+
+  // 👇 Scroll to bottom when messages update
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const handlesendmessage = async () => {
     if (!input.trim()) return;
 
@@ -20,13 +26,16 @@ const App = () => {
 
     try {
       const res = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/chat`,
+        `${import.meta.env.VITE_BACKEND_URL}/chat`,
         { Question: input },
         { headers: { "Content-Type": "application/json" } }
       );
 
       const aiResponse = res.data.data;
-      setMessages((prev) => [...prev, { sender: "ai", text: "", fullText: aiResponse }]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: "", fullText: aiResponse },
+      ]);
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -37,103 +46,137 @@ const App = () => {
       setIsThinking(false);
     }
   };
-  
-  // ⌨️ Typing effect logic
+
+  // ⌨️ Typing effect
   useEffect(() => {
     if (messages.length === 0) return;
     const lastMsgIndex = messages.length - 1;
     const lastMsg = messages[lastMsgIndex];
 
-    if (lastMsg.sender === "ai" && lastMsg.fullText && lastMsg.text.length < lastMsg.fullText.length) {
+    if (
+      lastMsg.sender === "ai" &&
+      lastMsg.fullText &&
+      lastMsg.text.length < lastMsg.fullText.length
+    ) {
       const timer = setTimeout(() => {
         setMessages((prev) => {
           const newMsgs = [...prev];
-          newMsgs[lastMsgIndex].text = lastMsg.fullText.slice(0, lastMsg.text.length + 1);
+          newMsgs[lastMsgIndex].text = lastMsg.fullText.slice(
+            0,
+            lastMsg.text.length + 2
+          );
           return newMsgs;
         });
-      }, 25); // typing speed (25ms per char)
+      }, 20); // Typing speed
       return () => clearTimeout(timer);
     }
   }, [messages]);
-  
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handlesendmessage();
   };
-  const formData = new FormData();
-  
+
+  // 📤 File Upload
   const handlefile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const formData = new FormData();
     formData.append("file", file);
-    formData.forEach((value, key) => console.log(key, value));
-    console.log("Selected file:", file);
-    uploader()
-  };
-  
-     const uploader = async ()=> {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/upload`, formData , {
-        headers: {
-          "Content-Type": "multipart/form-data"
+
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/upload`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
         }
-      })
-      console.log(res)
+      );
+      console.log("Uploaded:", res.data);
+    } catch (err) {
+      console.error("Upload error:", err);
     }
+  };
 
   return (
-    <div className="w-full h-screen flex justify-between">
+    <div className="w-full h-screen flex justify-between bg-neutral-900 text-white">
       {/* Sidebar */}
       <div className="sm:w-[10%] w-[20%] h-full bg-neutral-800 pt-7 sm:px-2 px-0">
-        <img className="w-100 h-auto" src="logo.png" alt="" />
+        <img className="w-100 h-auto" src="logo.png" alt="logo" />
       </div>
 
       {/* Chat Section */}
-      <div className="bg-neutral-900 sm:w-[90%] w-[85%] h-full flex flex-col items-center sm:p-3">
-        <h1 className="text-white font-[700] sm:text-2xl text-lg mt-5 sm:mt-0">
+      <div className="sm:w-[90%] w-[85%] flex flex-col items-center p-3 relative">
+        <h1 className="font-bold sm:text-2xl text-lg mb-3">
           AI Message Chatboard
         </h1>
 
-        <div className="sm:w-[70%] w-full h-full p-1">
-          <div className="overflow-y-auto h-[calc(100%-100px)] mb-4 scrollbar-hide">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`sm:text-sm text-[10px] text-white p-3 rounded-xl mb-3 max-w-fit ${
-                  msg.sender === "user"
-                    ? "bg-neutral-700 ml-auto"
-                    : "bg-neutral-900  mr-auto"
-                }`}
-              >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {msg.text}
-                </ReactMarkdown>
+        <div className="sm:w-[70%] w-full flex flex-col h-full overflow-hidden">
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-2">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <h1 className="text-neutral-500 text-3xl font-bold">
+                  Welcome to ChatPDF
+                </h1>
+                <p className="text-neutral-500 text-sm mt-2">
+                  Click <span className="text-xl">+</span> to upload a PDF and ask questions about it.
+                </p>
               </div>
-            ))}
+            ) : (
+              messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-xl mb-3 sm:text-sm text-xs max-w-fit ${
+                    msg.sender === "user"
+                      ? "bg-neutral-700 ml-auto"
+                      : " mr-auto"
+                  }`}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
+              ))
+            )}
 
             {isThinking && (
-              <div className="text-sm mr-auto p-3 rounded-xl max-w-fit">
-                <h1 className="animate-pulse text-white">Thinking...</h1>
+              <div className="text-sm mr-auto p-3 rounded-xl animate-pulse">
+                Thinking...
               </div>
             )}
+
+            <div ref={chatEndRef} />
           </div>
 
-          {/* Input Bar */}
-          <div className="fixed mb-7 max-w-3xl left-0 bg-neutral-800 h-15 inset-x-0 rounded-3xl mx-auto bottom-0 flex justify-center">
+          {/* Input Section */}
+          <div className="fixed bottom-5 inset-x-0 mx-auto max-w-3xl flex bg-neutral-800 rounded-3xl items-center px-4 py-2">
             <span
               onClick={() => document.getElementById("fileInput").click()}
-              className="hover:bg-neutral-700 w-12 h-10 rounded-full flex justify-center items-center mt-2 ml-4 cursor-pointer"
+              className="hover:bg-neutral-700 w-10 h-10 rounded-full flex justify-center items-center cursor-pointer mr-2"
             >
-              <input onChange={handlefile} type="file" id="fileInput" hidden />
+              <input
+                onChange={handlefile}
+                type="file"
+                accept="application/pdf"
+                id="fileInput"
+                hidden
+              />
               <IoMdAdd color="white" size={25} />
             </span>
+
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="w-full h-full text-white p-2 outline-none bg-transparent"
-              type="text"
-              placeholder="ask me question....."
+              className="flex-1 bg-transparent text-white p-2 outline-none"
+              placeholder="Ask a question..."
             />
-            <button onClick={handlesendmessage} className="px-4 py-1">
+
+            <button
+              onClick={handlesendmessage}
+              className="ml-2 bg-neutral-700 hover:bg-neutral-600 rounded-full p-2 cursor-pointer"
+            >
               <IoSend size={20} color="white" />
             </button>
           </div>

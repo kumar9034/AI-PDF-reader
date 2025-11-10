@@ -20,7 +20,7 @@ export async function chat(Question) {
         const relevent = await vectorStore.similaritySearch(Question, 3)
         const result = relevent.map((chunks) => chunks.pageContent).join("\n\n")
 
-        const SYSTEM_PROMPT = "you are assistant for question-answering tasks. Use the following relevant pieces of retrived context to answer the question. if you don't know the answer, say I don't know answer to give type describe for and points ma  and next new line  "
+        const SYSTEM_PROMPT = "you are assistant for question-answering tasks. Use the following relevant pieces of retrived context to answer the question. and   "
         const userQuery = `Question : ${Question}
            Relevent context : ${result}
            Answer :`

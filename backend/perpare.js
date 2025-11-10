@@ -23,12 +23,13 @@ export const vectorStore = await PineconeStore.fromExistingIndex(
 );
 
 export async function TextLoader(pdfUrl) {
+  console.log(pdfUrl)
   try{
-    
-    
       const tempPath = path.join(process.cwd(), "temp.pdf");
     
-      const response = await axios.get(pdfUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(pdfUrl, { responseType: "arraybuffer", headers: {
+        "User-Agent": "RAG-Indexing-Agent/1.0" 
+    }});
       await fs.writeFile(tempPath, response.data);
     
       const loader = new PDFLoader(tempPath, { splitPages: false });
@@ -51,6 +52,7 @@ export async function TextLoader(pdfUrl) {
         success : true,
         message : " PDF text embedded into Pinecone successfully"
       }
+
   }catch(error){
     console.error("❌ Error in TextLoader:", error.message);
     return {
