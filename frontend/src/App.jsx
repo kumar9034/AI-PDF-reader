@@ -81,6 +81,14 @@ const App = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+     const maxSize = 500 * 1024; 
+
+  if (file.size > maxSize) {
+    alert("⚠️ File too large! Please upload a PDF under 500 KB.");
+    e.target.value = ""; // clear the input
+    return;
+  }
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -120,7 +128,7 @@ const App = () => {
                   Welcome to ChatPDF
                 </h1>
                 <p className="text-neutral-500 text-sm mt-2">
-                  Click <span className="text-xl">+</span> to upload a PDF and ask questions about it.
+                  Click <span className="text-xl">+</span> to upload a PDF (max 500 KB) and ask questions about it. 
                 </p>
               </div>
             ) : (
