@@ -81,13 +81,13 @@ const App = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-     const maxSize = 500 * 1024; 
+    const maxSize = 500 * 1024;
 
-  if (file.size > maxSize) {
-    alert("⚠️ File too large! Please upload a PDF under 500 KB.");
-    e.target.value = ""; // clear the input
-    return;
-  }
+    if (file.size > maxSize) {
+      alert("⚠️ File too large! Please upload a PDF under 500 KB.");
+      e.target.value = ""; // clear the input
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -101,6 +101,7 @@ const App = () => {
         }
       );
       console.log("Uploaded:", res.data);
+
     } catch (err) {
       console.error("Upload error:", err);
     }
@@ -109,8 +110,9 @@ const App = () => {
   return (
     <div className="w-full h-screen flex justify-between bg-neutral-900 text-white">
       {/* Sidebar */}
-      <div className="sm:w-[10%] w-[20%] h-full bg-neutral-800 pt-7 sm:px-2 px-0">
+      <div className="sm:w-[10%] w-[10%] h-full bg-neutral-800 pt-7 sm:px-2 px-0">
         <img className="w-100 h-auto" src="logo.png" alt="logo" />
+        <h1 className="font-[700] sm:block hidden sm:ml-6 sm:-mt-3 -mt-2 text-[12px] ml-3">ChatPDF</h1>
       </div>
 
       {/* Chat Section */}
@@ -124,22 +126,21 @@ const App = () => {
           <div className="flex-1 overflow-y-auto scrollbar-hide p-2">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <h1 className="text-neutral-500 text-3xl font-bold">
+                <h1 className="text-neutral-500 sm:text-3xl text-xl font-bold">
                   Welcome to ChatPDF
                 </h1>
-                <p className="text-neutral-500 text-sm mt-2">
-                  Click <span className="text-xl">+</span> to upload a PDF (max 500 KB) and ask questions about it. 
+                <p className="text-neutral-500 sm:text-sm  text-[12px] mt-2">
+                  Click <span className="text-xl">+</span> to upload a PDF (max 500 KB) and ask questions about it.
                 </p>
               </div>
             ) : (
               messages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-xl mb-3 sm:text-sm text-xs max-w-fit ${
-                    msg.sender === "user"
+                  className={`p-3 rounded-xl mb-3 sm:text-sm text-xs max-w-fit ${msg.sender === "user"
                       ? "bg-neutral-700 ml-auto"
                       : " mr-auto"
-                  }`}
+                    }`}
                 >
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.text}
@@ -158,10 +159,16 @@ const App = () => {
           </div>
 
           {/* Input Section */}
-          <div className="fixed bottom-5 inset-x-0 mx-auto max-w-3xl flex bg-neutral-800 rounded-3xl items-center px-4 py-2">
+
+          <div className="fixed bottom-3 inset-x-0 mx-auto 
+                           sm:w-[70%] w-[78%] flex items-center 
+                            bg-neutral-800 rounded-3xl px-2 sm:px-4 py-2 shadow-lg">
+
+            {/* 📁 File Upload Button */}
             <span
               onClick={() => document.getElementById("fileInput").click()}
-              className="hover:bg-neutral-700 w-10 h-10 rounded-full flex justify-center items-center cursor-pointer mr-2"
+              className="hover:bg-neutral-700 w-9 h-9 sm:w-10 sm:h-10 
+                         rounded-full flex justify-center items-center cursor-pointer mr-1 sm:mr-2"
             >
               <input
                 onChange={handlefile}
@@ -170,22 +177,26 @@ const App = () => {
                 id="fileInput"
                 hidden
               />
-              <IoMdAdd color="white" size={25} />
+              <IoMdAdd color="white" size={22} className="sm:size-[25px]" />
             </span>
 
+            {/* ✏️ Text Input */}
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="flex-1 bg-transparent text-white p-2 outline-none"
+              className="flex-1 bg-transparent text-white text-sm sm:text-base 
+                              p-1 sm:p-2 outline-none placeholder-neutral-400"
               placeholder="Ask a question..."
             />
 
+            {/* 🚀 Send Button */}
             <button
               onClick={handlesendmessage}
-              className="ml-2 bg-neutral-700 hover:bg-neutral-600 rounded-full p-2 cursor-pointer"
+              className="ml-1 sm:ml-2 bg-neutral-700 hover:bg-neutral-600 
+                          rounded-full p-2 sm:p-2.5 cursor-pointer transition-all"
             >
-              <IoSend size={20} color="white" />
+              <IoSend size={18} color="white" className="sm:size-[20px]" />
             </button>
           </div>
         </div>
