@@ -56,10 +56,12 @@ app.post("/upload", upload.single("file"), async (req, res) => {
         const fileData = fs.readFileSync(filePath); 
 
         // 1. Upload the file data to Vercel Blob
+        const token = process.env.BLOB_READ_WRITE_TOKEN
         // The file name will be used as the blob key
         const blob = await put(req.file.originalname, fileData, {
             access: 'public', // Makes the file URL publicly accessible
             contentType: req.file.mimetype,
+            token,
             // The put function automatically uses the BLOB_READ_WRITE_TOKEN 
             // from the environment variables.
         });
