@@ -47,40 +47,44 @@ app.post("/chat", async (req, res) => {
 });
 
 app.post("/upload", upload.single("file"), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-        
-        const filePath = req.file.path;
-        // Read file data into memory (Multer already saved it to disk)
-        const fileData = fs.readFileSync(filePath); 
-
-        // 1. Upload the file data to Vercel Blob
-        const token = process.env.BLOB_READ_WRITE_TOKEN
-        // The file name will be used as the blob key
-        const blob = await put(req.file.originalname, fileData, {
-            access: 'public', // Makes the file URL publicly accessible
-            contentType: req.file.mimetype,
-            token,
-            // The put function automatically uses the BLOB_READ_WRITE_TOKEN 
-            // from the environment variables.
-        });
-        // 2. Delete the temp file
-        fs.unlinkSync(filePath);
-        
-        // 3. The blob object contains the final URL
-        const fileUrl = blob.url; 
-        
-        const message = (await TextLoader(fileUrl))
-
-        // 4. Return success (and proceed to RAG indexing with fileUrl)
-        res.json({ success: true, fileUrl, message : message });
-
-    } catch (err) {
-        console.error("Vercel Blob Upload Error:", err.message);
-        res.status(500).json({ message: "Vercel Blob upload failed", error: err.message });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
+
+    const filePath = req.file.path;
+    // Read file data into memory (Multer already saved it to disk)
+    const fileData = fs.readFileSync(filePath);
+
+    // 1. Upload the file data to Vercel Blob
+    // The file name will be used as the blob key
+    const blob = await put(req.file.originalname, fileData, {
+      access: 'public', // Makes the file URL publicly accessible
+      contentType: req.file.mimetype,
+      token: process.env.BLOB_READ_WRITE_TOKEN
+      // The put function automatically uses the BLOB_READ_WRITE_TOKEN 
+      // from the environment variables.
+    });
+    // 2. Delete the temp file
+    fs.unlinkSync(filePath);
+
+    // 3. The blob object contains the final URL
+    const fileUrl = blob.url;
+
+    const message = await TextLoader(fileUrl)
+
+    console.log(message)
+    // 4. Return success (and proceed to RAG indexing with fileUrl)
+    res.json({ success: true, fileUrl, message: message });
+
+  } catch (err) {
+    console.error("Blob upload failed:", err.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      message: "Upload failed",
+      error: err.response?.data || err.message,
+    });
+  }
 });
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);

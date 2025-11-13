@@ -4,6 +4,7 @@ import { IoSend } from "react-icons/io5";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import toast, { Toaster } from 'react-hot-toast';
 
 const App = () => {
   const [messages, setMessages] = useState([]);
@@ -100,21 +101,27 @@ const App = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      console.log("Uploaded:", res.data);
+      console.log("Upload response:", res.data);
+      if (res.data.success === true) {
+        toast.success("✅ File uploaded successfully!");
+      } else {
+        toast.error("⚠️ Upload failed!");
+      }
 
     } catch (err) {
       console.error("Upload error:", err);
     }
   };
 
+
   return (
     <div className="h-screen w-full bg-neutral-900">
-
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="w-full h-20 flex justify-between  bg-neutral-900 text-white">
         {/* Sidebar */}
         <div className="flex flex-col w-30 h-25">
           <img className="w-25 h-15" src="logo.png" alt="logo" />
-          <h1 className="font-[700]  sm:ml-6 sm:-mt-3 -mt-2 text-[12px] ml-4">ChatPDF</h1>
+          <h1 className="font-[700]  sm:ml-6 sm:-mt-3 -mt-2 text-[12px] ml-7">ChatPDF</h1>
         </div>
 
 

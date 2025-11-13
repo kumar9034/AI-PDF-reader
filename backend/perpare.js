@@ -50,14 +50,14 @@ export async function TextLoader(pdfUrl) {
       await vectorStore.addDocuments(documents);
       return {
         success : true,
-        message : " PDF text embedded into Pinecone successfully"
+        message : " PDF successfully uploaded "
       }
 
   }catch(error){
-    console.error("❌ Error in TextLoader:", error.response);
+    console.error("❌ Error in TextLoader:", error.message);
     return {
       success : false,
-        error : error.response
+        error : error.message
     }
   }
 
