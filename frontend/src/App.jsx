@@ -108,7 +108,7 @@ const App = () => {
   };
 
   return (
-    <div className="h-screen w-full">
+    <div className="h-screen w-full bg-neutral-900">
 
       <div className="w-full h-20 flex justify-between  bg-neutral-900 text-white">
         {/* Sidebar */}
@@ -126,11 +126,11 @@ const App = () => {
         </div>
       </div>
 
-      <div className="h-[86.4%] w-full bg-neutral-900 flex items-center flex-col p-5 pb-13  overflow-hidden">
+      <div className="h-[84%] sm:w-[86%] w-full bg-neutral-900 flex items-center flex-col p-5 pb-13  overflow-hidden">
         {/* Chat Messages */}
         <div className="flex-1 sm:w-[70%] w-full overflow-y-auto scrollbar-hide p-2">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center -ml-10">
+            <div className="flex flex-col items-center justify-center h-full text-center ">
               <h1 className="text-neutral-500 sm:text-3xl text-xl font-bold">
                 Welcome to ChatPDF
               </h1>
@@ -165,9 +165,9 @@ const App = () => {
 
         {/* Input Section */}
 
-        <div className="fixed bottom-3 inset-x-0 mx-auto 
-                           sm:w-[70%] w-[70%] flex items-center 
-                            bg-neutral-800 rounded-3xl px-2 sm:px-4 py-2 shadow-lg">
+        <div className="fixed sm:bottom-3 bottom-1 inset-x-0 mx-auto 
+                           sm:w-[70%] w-full flex items-center 
+                            bg-neutral-800 sm:rounded-3xl  px-2 sm:px-4 py-2 shadow-lg">
 
           {/* 📁 File Upload Button */}
           <span
