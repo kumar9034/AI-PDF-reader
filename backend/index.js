@@ -72,7 +72,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
         // 3. The blob object contains the final URL
         const fileUrl = blob.url; 
         
-        const message = TextLoader(fileUrl)
+        const message = (await TextLoader(fileUrl))
+
         // 4. Return success (and proceed to RAG indexing with fileUrl)
         res.json({ success: true, fileUrl, message : message });
 
