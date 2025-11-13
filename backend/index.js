@@ -33,6 +33,7 @@ app.use(
     credentials: true,
   })
 );
+app.use("/uploads", express.static("uploads"));
 
 
 app.post("/chat", async (req, res) => {

@@ -54,10 +54,10 @@ export async function TextLoader(pdfUrl) {
       }
 
   }catch(error){
-    console.error("❌ Error in TextLoader:", error.message);
+    console.error("❌ Error in TextLoader:", error.response);
     return {
       success : false,
-        error : error
+        error : error.response
     }
   }
 

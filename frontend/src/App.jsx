@@ -108,100 +108,105 @@ const App = () => {
   };
 
   return (
-    <div className="w-full h-screen flex justify-between bg-neutral-900 text-white">
-      {/* Sidebar */}
-      <div className="sm:w-[10%] w-[10%] h-full bg-neutral-800 pt-7 sm:px-2 px-0">
-        <img className="w-100 h-auto" src="logo.png" alt="logo" />
-        <h1 className="font-[700] sm:block hidden sm:ml-6 sm:-mt-3 -mt-2 text-[12px] ml-3">ChatPDF</h1>
+    <div className="h-screen w-full">
+
+      <div className="w-full h-20 flex justify-between  bg-neutral-900 text-white">
+        {/* Sidebar */}
+        <div className="flex flex-col w-30 h-25">
+          <img className="w-25 h-15" src="logo.png" alt="logo" />
+          <h1 className="font-[700]  sm:ml-6 sm:-mt-3 -mt-2 text-[12px] ml-4">ChatPDF</h1>
+        </div>
+
+
+        {/* Chat Section */}
+        <div className="sm:w-[90%] w-[70%]  flex flex-col items-center  relative">
+          <h1 className="font-bold sm:text-2xl text-lg mb-3 -ml-10 mt-5">
+            AI Message Chatboard
+          </h1>
+        </div>
       </div>
 
-      {/* Chat Section */}
-      <div className="sm:w-[90%] w-[85%] flex flex-col items-center p-3 relative">
-        <h1 className="font-bold sm:text-2xl text-lg mb-3">
-          AI Message Chatboard
-        </h1>
-
-        <div className="sm:w-[70%] w-full flex flex-col h-full overflow-hidden">
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-2">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <h1 className="text-neutral-500 sm:text-3xl text-xl font-bold">
-                  Welcome to ChatPDF
-                </h1>
-                <p className="text-neutral-500 sm:text-sm  text-[12px] mt-2">
-                  Click <span className="text-xl">+</span> to upload a PDF (max 500 KB) and ask questions about it.
-                </p>
+      <div className="h-[86.4%] w-full bg-neutral-900 flex items-center flex-col p-5 pb-13  overflow-hidden">
+        {/* Chat Messages */}
+        <div className="flex-1 sm:w-[70%] w-full overflow-y-auto scrollbar-hide p-2">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center -ml-10">
+              <h1 className="text-neutral-500 sm:text-3xl text-xl font-bold">
+                Welcome to ChatPDF
+              </h1>
+              <p className="text-neutral-500 sm:text-sm  text-[12px] mt-2">
+                Click <span className="text-xl">+</span> to upload a PDF (max 500 KB) and ask questions about it.
+              </p>
+            </div>
+          ) : (
+            messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`p-3 rounded-xl mb-3 text-white sm:text-sm text-xs max-w-fit ${msg.sender === "user"
+                  ? "bg-neutral-700 ml-auto"
+                  : " mr-auto"
+                  }`}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.text}
+                </ReactMarkdown>
               </div>
-            ) : (
-              messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-xl mb-3 sm:text-sm text-xs max-w-fit ${msg.sender === "user"
-                      ? "bg-neutral-700 ml-auto"
-                      : " mr-auto"
-                    }`}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.text}
-                  </ReactMarkdown>
-                </div>
-              ))
-            )}
+            ))
+          )}
 
-            {isThinking && (
-              <div className="text-sm mr-auto p-3 rounded-xl animate-pulse">
-                Thinking...
-              </div>
-            )}
+          {isThinking && (
+            <div className="text-sm text-white mr-auto p-3 rounded-xl animate-pulse">
+              Thinking...
+            </div>
+          )}
 
-            <div ref={chatEndRef} />
-          </div>
+          <div ref={chatEndRef} />
+        </div>
 
-          {/* Input Section */}
+        {/* Input Section */}
 
-          <div className="fixed bottom-3 inset-x-0 mx-auto 
-                           sm:w-[70%] w-[78%] flex items-center 
+        <div className="fixed bottom-3 inset-x-0 mx-auto 
+                           sm:w-[70%] w-[70%] flex items-center 
                             bg-neutral-800 rounded-3xl px-2 sm:px-4 py-2 shadow-lg">
 
-            {/* 📁 File Upload Button */}
-            <span
-              onClick={() => document.getElementById("fileInput").click()}
-              className="hover:bg-neutral-700 w-9 h-9 sm:w-10 sm:h-10 
+          {/* 📁 File Upload Button */}
+          <span
+            onClick={() => document.getElementById("fileInput").click()}
+            className="hover:bg-neutral-700 w-9 h-9 sm:w-10 sm:h-10 
                          rounded-full flex justify-center items-center cursor-pointer mr-1 sm:mr-2"
-            >
-              <input
-                onChange={handlefile}
-                type="file"
-                accept="application/pdf"
-                id="fileInput"
-                hidden
-              />
-              <IoMdAdd color="white" size={22} className="sm:size-[25px]" />
-            </span>
-
-            {/* ✏️ Text Input */}
+          >
             <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 bg-transparent text-white text-sm sm:text-base 
-                              p-1 sm:p-2 outline-none placeholder-neutral-400"
-              placeholder="Ask a question..."
+              onChange={handlefile}
+              type="file"
+              accept="application/pdf"
+              id="fileInput"
+              hidden
             />
+            <IoMdAdd color="white" size={22} className="sm:size-[25px]" />
+          </span>
 
-            {/* 🚀 Send Button */}
-            <button
-              onClick={handlesendmessage}
-              className="ml-1 sm:ml-2 bg-neutral-700 hover:bg-neutral-600 
+          {/* ✏️ Text Input */}
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1 bg-transparent text-white text-sm sm:text-base 
+                              p-1 sm:p-2 outline-none placeholder-neutral-400"
+            placeholder="Ask a question..."
+          />
+
+          {/* 🚀 Send Button */}
+          <button
+            onClick={handlesendmessage}
+            className="ml-1 sm:ml-2 bg-neutral-700 hover:bg-neutral-600 
                           rounded-full p-2 sm:p-2.5 cursor-pointer transition-all"
-            >
-              <IoSend size={18} color="white" className="sm:size-[20px]" />
-            </button>
-          </div>
+          >
+            <IoSend size={18} color="white" className="sm:size-[20px]" />
+          </button>
         </div>
       </div>
     </div>
+
   );
 };
 
